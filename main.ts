@@ -102,6 +102,7 @@ function applyFills(state: BotState, batch: Batch): void {
       if (fill.status === 'filled') {
         bought.add(rec.mint);
         candidates.delete(rec.mint);
+        buyCooldownUntil.delete(rec.mint);
         openEntries.set(rec.mint, { entrySlot: fill.slot, sprint: rec.sprint });
       } else {
         // Rejected or failed: the coin is NOT decided. Retry after a cooldown.
@@ -170,6 +171,7 @@ await runBot({
     }
     for (const [mint, holding] of state.positions) {
       if (orders.length >= maxOrders) break;
+      if (holding.token_amount <= 0n) continue;
       if (pendingSellMints.has(mint)) continue;
       const info = openEntries.get(mint);
       const held = state.slot - (info?.entrySlot ?? state.slot);
